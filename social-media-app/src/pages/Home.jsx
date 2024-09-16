@@ -130,7 +130,7 @@ const Home = () => {
   return (
     <div className="flex">
       {/* Fixed Vertical Menu */}
-      <div className="fixed top-0 left-0 w-[15%] h-full">
+      <div className="fixed top-0 left-0 w-[15%] h-full z-20" >
         <VerticalMenu />
       </div>
 
