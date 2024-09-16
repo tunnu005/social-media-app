@@ -28,11 +28,11 @@ const userSchema = new mongoose.Schema({
     type: String, // URL or file path to the profile picture
     // default: ''
   },
-//   birthdate: {
-//     type: String,
-//     // required: false,  // Make it optional if necessary
+  birthdate: {
+    type: Date,
+    // required: false,  // Make it optional if necessary
     
-// },
+},
 
   role: {
     type: String,

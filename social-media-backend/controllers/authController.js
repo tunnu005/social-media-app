@@ -8,10 +8,12 @@ dotenv.config()
 export const createUser = async (req, res) => {
   console.log(req.body)
   try {
-    const { username, password, profilePic, birthdate, role,email } = req.body;
-    // console.log({ username, password, bio, profilePic, birthdate, role })
+    const { username, password, profilePic, birthDate, role,email } = req.body;
+    // console.log({ username, password, bio, profilePic, birthDate, role })
 
     // Check if the username is already taken
+    console.log(typeof birthDate)
+    console.log(birthDate)
     const existingUser = await User.findOne({ username });
     console.log(existingUser)
     if (existingUser) {
@@ -25,7 +27,7 @@ export const createUser = async (req, res) => {
       username,
       password: hashedPassword,
       profilePic, // This could be a URL or a file path
-      // birthdate, // Ensure birthdate is stored as a Date object
+      birthdate:new Date(birthDate), // Ensure birthDate is stored as a Date object
       role,
       email
     });
@@ -34,7 +36,7 @@ export const createUser = async (req, res) => {
     console.log('Creating')
     // Save the user to the database
     await newUser.save();
-
+    console.log('done');
     const token = jwt.sign({ userId: newUser._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
     console.log(token)
 

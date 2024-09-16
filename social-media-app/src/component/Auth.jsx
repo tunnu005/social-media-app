@@ -17,7 +17,7 @@ import { Toaster } from "@/components/ui/sonner"
 
 
 function AuthPage() {
-  const [birthDate, setBirthDate] = useState('2004-01-01');
+  const [birthDate, setbirthDate] = useState(null);
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -35,7 +35,7 @@ function AuthPage() {
 
 
     const user = await signup({ username, email, password, birthDate, role, profilePic })
-
+    
     console.log(user);
     if (user.success) {
       toast(user.message, {
@@ -189,7 +189,7 @@ function AuthPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="birthdate">Birthdate</Label>
+                    <Label htmlFor="birthDate">birthDate</Label>
                     <Popover>
                       <PopoverTrigger asChild>
                         <Button
@@ -204,7 +204,7 @@ function AuthPage() {
                         <input
                           type="date"
                           value={birthDate}
-                          onChange={(e) => setBirthDate(e.target.value)}
+                          onChange={(e) => setbirthDate(e.target.value)}
                           className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-400"
                         />
                       </PopoverContent>
