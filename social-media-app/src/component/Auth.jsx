@@ -65,6 +65,31 @@ function AuthPage() {
     const user = await login({ username, password });
 
     console.log(user);
+
+    if (user.success) {
+      toast(user.message, {
+        description: user.description,
+        action:{
+          label:"Okay",
+          onClick: () => {
+            navigate('/');
+          },
+        },
+      });
+      setTimeout(() => {
+        navigate('/');
+      }, 3000); // 2000 milliseconds = 2 seconds
+    } else {
+      toast(user.message, {
+        description: user.description,
+        action:{
+          label:"Okay",
+          onClick: () => {
+           console.log("okay");
+          },
+        },
+      });
+    }
   }
 
   const handleImageUpload = (e) => {

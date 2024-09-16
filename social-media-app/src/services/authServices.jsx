@@ -3,7 +3,7 @@ import {  serverapi } from '@/data/server';
 import axios from 'axios';
 
 const server = serverapi;
-export const login = async (username, password) => {
+export const login = async ({username, password}) => {
   const response = await axios.post(`${server}/api/auth/login`, { username, password });
   return response.data;
 };

@@ -15,7 +15,7 @@ export const createUser = async (req, res) => {
     const existingUser = await User.findOne({ username });
     console.log(existingUser)
     if (existingUser) {
-      return res.status(200).json({ success: false,message:`Hey ${username}, we're really sorry, but it looks like the username/email you've chosen is already taken.`, description:"registration failed(email/Username already exist)"});
+      return res.status(200).json({ success: false,message:`Uh-oh! 🚫 We hit a snag with your registration. Give it another shot or reach out to us for assistance 🛠️.`, description:"registration failed (email/Username already exist)"});
     }
     
     // Hash the password before saving it to the database()
@@ -34,11 +34,19 @@ export const createUser = async (req, res) => {
     console.log('Creating')
     // Save the user to the database
     await newUser.save();
+
+    const token = jwt.sign({ userId: newUser._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    console.log(token)
+
+      // Set token in HTTP-only cookie
+      res.cookie('token', token, {
+        expires: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),
+      });
     // console.log(savedUser)
     // console.log(savedUser);
     // Respond with the saved user data (excluding the password)
     res.status(201).json({
-     success: true,message:`Hey ${username}, welcome to our app! We’re thrilled to have you with us.`,description : "Account created successfully"
+     success: true,message:`Awesome! 😎 You’re all set, ${username}! Welcome to the team 🌟. Let’s get started!`,description : "Account created successfully"
     });
 
   } catch (error) {
@@ -52,24 +60,22 @@ export const login = async (req, res) => {
       const { username, password } = req.body;
 
       // Find the user by email
+      console.log(username, password);
       const user = await User.findOne({ username });
       if (!user || !(await bcrypt.compare(password, user.password))) {
-          return res.status(400).json({ message: 'Invalid credentials' });
+          return res.status(200).json({ success:false,message:` Uh-oh! 🚫 Wrong username or password. Give it another go 🔐!`,description : "login failed" });
       }
 
       // Generate JWT token
       const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-
+      console.log(token);
       // Set token in HTTP-only cookie
       res.cookie('token', token, {
-          httpOnly: true,      // Cookie cannot be accessed by JavaScript
-          // secure: process.env.NODE_ENV === 'production', // Only send cookie over HTTPS in production
-          maxAge: 60 * 60 * 1000, // 1 hour
-          sameSite: 'Strict'   // Prevent CSRF
+        expires: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),
       });
 
       // Send response
-      res.json({ message: 'Login successful' });
+      res.status(201).json({ success:true,message:` Hey ${username} 👋, good to see you again! Let’s get things rolling 🚀!`,description : "login successfully" });
   } catch (error) {
       res.status(500).json({ error: error.message });
   }

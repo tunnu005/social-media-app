@@ -13,7 +13,9 @@ connectDB();
 
 const app = express();
 app.use(express.json({ limit: '10mb'}));
-app.use(cookieParser());
+app.use(cookieParser(
+
+));
 app.use(cors());
 
 app.use('/api/auth', authRoutes);
