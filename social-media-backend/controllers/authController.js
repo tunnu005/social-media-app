@@ -15,22 +15,22 @@ export const createUser = async (req, res) => {
     const existingUser = await User.findOne({ username });
     console.log(existingUser)
     if (existingUser) {
-      return res.status(400).json({ error: 'Username already exists' });
+      return res.status(200).json({ success: false,message:`Hey ${username}, we're really sorry, but it looks like the username/email you've chosen is already taken.`, description:"registration failed(email/Username already exist)"});
     }
     
-    // Hash the password before saving it to the database
+    // Hash the password before saving it to the database()
     const hashedPassword = await bcrypt.hash(password, 10);
     // Create a new user instance
     const newUser = new User({
       username,
       password: hashedPassword,
       profilePic, // This could be a URL or a file path
-      birthdate, // Ensure birthdate is stored as a Date object
+      // birthdate, // Ensure birthdate is stored as a Date object
       role,
       email
     });
 
-    console.log(newUser);
+    // console.log(newUser);
     console.log('Creating')
     // Save the user to the database
     await newUser.save();
@@ -38,7 +38,7 @@ export const createUser = async (req, res) => {
     // console.log(savedUser);
     // Respond with the saved user data (excluding the password)
     res.status(201).json({
-     message:'done'
+     success: true,message:`Hey ${username}, welcome to our app! We’re thrilled to have you with us.`,description : "Account created successfully"
     });
 
   } catch (error) {
