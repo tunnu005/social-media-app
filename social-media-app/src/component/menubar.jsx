@@ -62,7 +62,7 @@ export default function VerticalMenu() {
 
           {/* Explore */}
           <a
-            href="#"
+            href="/Explore"
             className="flex items-center space-x-3 text-lg text-gray-700 hover:text-blue-500 transition-colors duration-300 relative group"
           >
             <Compass className="h-6 w-6" />
@@ -83,7 +83,7 @@ export default function VerticalMenu() {
 
           {/* Create */}
           <a
-            href="#"
+            href="/Create"
             className="flex items-center space-x-3 text-lg text-gray-700 hover:text-blue-500 transition-colors duration-300 relative group"
           >
             <PlusCircle className="h-6 w-6" />
