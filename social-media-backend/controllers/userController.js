@@ -111,3 +111,44 @@ export const followUser = async (req, res) => {
     }
 };
 
+
+// Unfollow a user
+export const unfollowUser = async (req, res) => {
+    try {
+        const { currentUsername, usernameToUnfollow } = req.body;
+        console.log(currentUsername, usernameToUnfollow);
+        // Fetch the users by username
+        const currentUser = await User.findOne({ username: currentUsername });
+        const userToUnfollow = await User.findOne({ username: usernameToUnfollow });
+
+        if (!currentUser || !userToUnfollow) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Check if currentUser is following the userToUnfollow
+        const isFollowing = currentUser.following.includes(userToUnfollow.username);
+        if (!isFollowing) {
+            return res.status(400).json({ message: 'You are not following this user' });
+        }
+
+        // Remove userToUnfollow from currentUser's following list
+        currentUser.following = currentUser.following.filter(
+            (userId) => userId.toString() !== userToUnfollow.username.toString()
+        );
+
+        // Remove currentUser from userToUnfollow's followers list
+        userToUnfollow.followers = userToUnfollow.followers.filter(
+            (userId) => userId.toString() !== currentUser.username.toString()
+        );
+
+        // Save both users
+        await currentUser.save();
+        await userToUnfollow.save();
+
+        res.status(200).json({ message: 'User unfollowed successfully' });
+    } catch (error) {
+        console.error('Error while unfollowing user:', error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+};
+

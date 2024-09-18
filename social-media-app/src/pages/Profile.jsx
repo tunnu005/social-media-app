@@ -6,11 +6,9 @@ import { Dialog, DialogContent, DialogTrigger } from "../components/ui/dialog";
 import { ScrollArea } from "../components/ui/scroll-area";
 import { Heart, MessageCircle } from "lucide-react";
 import Lilmenu from "../component/lilmenubar";
-import image6 from "../../public/images/8.png";
 import { useNavigate, useParams } from 'react-router-dom';
-import { followUser, getProfile } from '@/services/userServices';
+import { followUser, getProfile, unfollowUser } from '@/services/userServices';
 import { fetchPosts } from '@/services/postServices';
-// import { useAuth } from '@/context/AuthContext';  // Assuming you use a context for auth
 import Cookies from 'js-cookie';
 
 const CoolProfilePage = () => {
@@ -19,11 +17,11 @@ const CoolProfilePage = () => {
     const [likes, setLikes] = useState(0);
     const [profile, setProfile] = useState({ username: '', bio: '', followers: 0, following: 0 });
     const [posts, setPosts] = useState([]);
-    const { userId,username } = useParams();
-    // const { currentUser } = useAuth(); // Get the current authenticated user
+    const [isFollowing, setIsFollowing] = useState(false);  // New state for follow status
+    const { userId, username } = useParams();
+    console.log(username)
     const navigate = useNavigate();
     const currentUser = Cookies.get('userId');
-    console.log(currentUser)
 
     const handleLike = () => {
         const newLikedState = !liked;
@@ -37,12 +35,17 @@ const CoolProfilePage = () => {
                 const profileData = await getProfile(userId);
                 console.log('Fetched Profile:', profileData);
                 setProfile(profileData);
+
+                // Check if the current user is following this profile
+                if (profileData.followers.includes(currentUser)) {
+                    setIsFollowing(true);  // User is already following
+                }
             } catch (error) {
                 console.error('Error fetching profile:', error);
             }
         };
         fetchProfile();
-    }, [userId]);
+    }, [userId, currentUser]);
 
     useEffect(() => {
         const fetchUserPosts = async () => {
@@ -57,10 +60,27 @@ const CoolProfilePage = () => {
         fetchUserPosts();
     }, [userId]);
 
-    const handlefollow = async() =>{
-        const resp = await followUser({usernameToFollow:username,currentUsername:currentUser});
-        console.log(resp);
-    }
+    const handleFollow = async () => {
+        try {
+           if(isFollowing)
+           {
+            const resp = await unfollowUser({currentUsername:currentUser,usernameToUnfollow:username})
+           }else{
+            const response = await followUser({ usernameToFollow: username, currentUsername: currentUser });
+            console.log(response);
+           }
+
+            // Toggle follow status based on current state
+            setIsFollowing(!isFollowing);
+            // Update the follower count
+            setProfile(prevProfile => ({
+                ...prevProfile,
+                followers: isFollowing ? prevProfile.followers - 1 : prevProfile.followers + 1
+            }));
+        } catch (error) {
+            console.error('Error following/unfollowing user:', error);
+        }
+    };
 
     return (
         <div className="min-h-screen bg-gray-100 p-8 flex">
@@ -84,11 +104,11 @@ const CoolProfilePage = () => {
                 <p className="text-center">{profile.bio || "Bio not available"}</p>
                 <div className="flex justify-center space-x-4">
                     <div className="text-center">
-                        <p className="font-bold">{profile.followers || 0}</p>
+                        <p className="font-bold">{profile.followers.length || 0}</p>
                         <p className="text-sm text-muted-foreground">Followers</p>
                     </div>
                     <div className="text-center">
-                        <p className="font-bold">{profile.following || 0}</p>
+                        <p className="font-bold">{profile.following.length || 0}</p>
                         <p className="text-sm text-muted-foreground">Following</p>
                     </div>
                 </div>
@@ -100,9 +120,9 @@ const CoolProfilePage = () => {
                         Edit Profile
                     </Button>
                 ) : (
-                    <Button onClick={handlefollow} className="w-full bg-gradient-to-r from-slate-950 via-gray-800 to-slate-950 text-white font-semibold py-2 px-4 rounded-lg hover:bg-gradient-to-r hover:from-gray-700 hover:via-gray-900 hover:to-gray-700 hover:scale-105 hover:text-gray-100 transition-all duration-300 ease-in-out hover:shadow-[0_10px_20px_rgba(0,0,0,0.3)] relative overflow-hidden">
+                    <Button onClick={handleFollow} className="w-full bg-gradient-to-r from-slate-950 via-gray-800 to-slate-950 text-white font-semibold py-2 px-4 rounded-lg hover:bg-gradient-to-r hover:from-gray-700 hover:via-gray-900 hover:to-gray-700 hover:scale-105 hover:text-gray-100 transition-all duration-300 ease-in-out hover:shadow-[0_10px_20px_rgba(0,0,0,0.3)] relative overflow-hidden">
                         <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 hover:opacity-30 transition-opacity duration-500"></span>
-                        Follow
+                        {isFollowing ? 'Following' : 'Follow'}
                     </Button>
                 )}
             </Card>
