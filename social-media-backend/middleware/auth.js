@@ -1,23 +1,21 @@
 import jwt from 'jsonwebtoken';
-
+import dotenv from 'dotenv';
+import mongoose from 'mongoose';
+dotenv.config();
 const Auth = (req, res, next) => {
     // Get the token from cookies
     const token = req.cookies.token;
-
+    
+    console.log(token)
     if (!token) {
         return res.status(401).json({ message: 'No token provided' });
     }
 
     // Verify the token
-    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-        if (err) {
-            return res.status(403).json({ message: 'Invalid token' });
-        }
-
-        // Attach the decoded user ID to the request object
-        req.userId = decoded.userId;
-        next();
-    });
+    const decode = jwt.verify(token, process.env.JWT_SECRET);
+    console.log(decode)
+    req.userId = decode.id;
+    next();
 };
 
 export default Auth;

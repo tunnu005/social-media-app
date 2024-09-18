@@ -16,7 +16,7 @@ const userSchema = new mongoose.Schema({
   email: {
     type: String,
     required: true,
-    unique: true,
+    // unique: true,
     lowercase: true,
    
   },
@@ -38,7 +38,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     enum: ['student', 'celebrity', 'influencer', 'other'], // Restrict to specific values
     // default: 'student'
-  }
+  },
 }, { timestamps: true }); // Adds createdAt and updatedAt fields automatically
 
 // Create the User model using the schema

@@ -45,13 +45,17 @@ const PostSlider = ({ posts }) => {
           </button>
         </div>
       </div>
-      <div className="relative">
+      <div className="relative ">
         <div className="overflow-hidden">
           <div className="flex transition-transform duration-300 ease-in-out" style={{ transform: `translateX(-${currentPost * 100}%)` }}>
             {posts.map((post) => (
-              <div key={post.id} className="w-full flex-shrink-0">
-                <img src={post.image} alt={post.title} className="w-full h-64 object-cover rounded-lg" />
-                <h3 className="mt-2 text-lg font-semibold">{post.title}</h3>
+              <div key={post.id} className="w-full flex-shrink-0 justify-center items-center">
+                <div className='flex justify-center items-center'>
+                <img src={post.image} alt={post.title} className="w-96 h-96 object-cover rounded-lg" />
+               
+                </div>
+                <h3 className="mt-2 text-lg font-semibold flex justify-center items-center">{post.title}</h3>
+               
               </div>
             ))}
           </div>
@@ -117,7 +121,7 @@ const RandomPost = ({ post }) => {
     <div ref={postRef} className={`bg-white rounded-lg shadow-md overflow-hidden transition-opacity duration-500 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
       {isVisible ? (
         <>
-          <img src={post.image} alt={post.title} className="w-full h-48 object-cover" />
+          <img src={post.image} alt={post.title} className="w-80 h-80 object-cover" />
           <div className="p-4">
             <h3 className="text-lg font-semibold mb-2">{post.title}</h3>
             <p className="text-sm text-gray-600 mb-2">{post.category}</p>

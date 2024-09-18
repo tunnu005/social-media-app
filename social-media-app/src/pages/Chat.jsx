@@ -132,8 +132,8 @@ export default function ChatComponent() {
       <div className="fixed top-0 left-0 w-[3%] h-full z-20">
                 <Lilmenu  />
        </div>
-       <div className='max-h-screen flex ml-10'>
-      <div className="w-1/3  border-r bg-white p-4 h-screen overflow-y-auto">
+       <div className='max-h-screen flex ml-16'>
+      <div className="w-1/3  border-r bg-gray-100 p-4 h-screen overflow-y-auto">
         <h2 className="text-xl font-semibold mb-4">Chats</h2>
         <ScrollArea className="h-[calc(100vh-100px)]">
           {mockChats.map(chat => (
@@ -160,7 +160,7 @@ export default function ChatComponent() {
       {/* Right Side: Chat Interface */}
       <div className="w-2/3 flex flex-col">
         {/* Chat Header with Settings Icon */}
-        <div className="border-b bg-white p-4 flex items-center space-x-4 justify-between">
+        <div className="border-b bg-gray-100 p-4 flex items-center space-x-4 justify-between">
           <div className="flex items-center space-x-4">
             <Avatar className="w-10 h-10 transition-transform duration-300 ease-in-out hover:scale-110 hover:rotate-3 hover:shadow-xl hover:shadow-blue-500/50">
               <AvatarImage src={selectedChat.profilePic} alt={selectedChat.name} />

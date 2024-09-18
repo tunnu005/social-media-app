@@ -13,52 +13,61 @@ import { signup, login } from "@/services/authServices";
 import { Fade } from "react-awesome-reveal";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-import { Toaster } from "@/components/ui/sonner"
-
+import { Toaster } from "@/components/ui/sonner";
+import { Textarea } from "@/components/ui/textarea";
 
 function AuthPage() {
-  const [birthDate, setbirthDate] = useState(null);
+  const [birthDate, setBirthDate] = useState(null);
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('');
   const [profilePic, setProfilePic] = useState(null);
   const [preview, setPreview] = useState(null);
-  const [bio, setBio] = useState(null);
+  const [bio, setBio] = useState('');
+  const [activeTab, setActiveTab] = useState("signin"); // New state to manage active tab
 
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   const handleSubmitSignup = async (e) => {
     e.preventDefault();
     // Handle signup logic here
-    console.log({ username, email, password, birthDate, role, profilePic });
+    console.log({ username, email, password, birthDate, role, profilePic, bio });
 
+    const formData = new FormData();
+    formData.append('username', username);
+    formData.append('email', email);
+    formData.append('password', password);
+    formData.append('birthDate', birthDate);
+    formData.append('role', role);
+    formData.append('file', profilePic);
+    formData.append('bio', bio); // Add bio to form data
 
-    const user = await signup({ username, email, password, birthDate, role, profilePic })
-    
+    const user = await signup(formData);
+
     console.log(user);
     if (user.success) {
       toast(user.message, {
         description: user.description,
-        action:{
-          label:"Okay",
+        action: {
+          label: "Okay",
           onClick: () => {
-            navigate('/');
+            setActiveTab("signin"); // Switch to login tab
           },
         },
       });
       setTimeout(() => {
-        navigate('/');
-      }, 6000); // 2000 milliseconds = 2 seconds
+        // navigate('/');
+        setActiveTab("signin");
+      }, 6000); // 6000 milliseconds = 6 seconds
     } else {
       toast(user.message, {
         description: user.description,
       });
     }
-
   };
 
-  const handlelogin = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
 
     // Handle login logic here
@@ -69,8 +78,8 @@ function AuthPage() {
     if (user.success) {
       toast(user.message, {
         description: user.description,
-        action:{
-          label:"Okay",
+        action: {
+          label: "Okay",
           onClick: () => {
             navigate('/');
           },
@@ -78,19 +87,19 @@ function AuthPage() {
       });
       setTimeout(() => {
         navigate('/');
-      }, 3000); // 2000 milliseconds = 2 seconds
+      }, 3000); // 3000 milliseconds = 3 seconds
     } else {
       toast(user.message, {
         description: user.description,
-        action:{
-          label:"Okay",
+        action: {
+          label: "Okay",
           onClick: () => {
-           console.log("okay");
+            console.log("okay");
           },
         },
       });
     }
-  }
+  };
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
@@ -99,7 +108,7 @@ function AuthPage() {
     reader.onloadend = () => {
       const base64String = reader.result;
       const imageUrl = `data:${file.type};base64,${base64String.split(',')[1]}`;
-      setProfilePic(imageUrl);
+      setProfilePic(file);
       setPreview(imageUrl);
       // Store the Base64 image as a data URL
     };
@@ -109,6 +118,14 @@ function AuthPage() {
     }
   };
 
+  const handleBioChange = (e) => {
+    const newBio = e.target.value;
+    if (newBio.length <= 150) {
+      setBio(newBio);
+    } else {
+      toast("Bio cannot exceed 150 characters.", { description: "Please shorten your bio." });
+    }
+  };
 
   return (
     <Fade>
@@ -119,14 +136,14 @@ function AuthPage() {
             <CardDescription className="text-center">Sign in or create an account</CardDescription>
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue="signin" className="w-full">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="signin">Sign In</TabsTrigger>
                 <TabsTrigger value="signup">Sign Up</TabsTrigger>
               </TabsList>
              
               <TabsContent value="signin">
-                <form className="space-y-4" onSubmit={handlelogin}>
+                <form className="space-y-4" onSubmit={handleLogin}>
                   <div className="space-y-2">
                     <Label htmlFor="username">Username</Label>
                     <Input
@@ -189,7 +206,7 @@ function AuthPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="birthDate">birthDate</Label>
+                    <Label htmlFor="birthDate">Birth Date</Label>
                     <Popover>
                       <PopoverTrigger asChild>
                         <Button
@@ -204,7 +221,7 @@ function AuthPage() {
                         <input
                           type="date"
                           value={birthDate}
-                          onChange={(e) => setbirthDate(e.target.value)}
+                          onChange={(e) => setBirthDate(e.target.value)}
                           className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-400"
                         />
                       </PopoverContent>
@@ -218,8 +235,6 @@ function AuthPage() {
                       accept="image/*"
                       onChange={handleImageUpload}
                     />
-
-                    {/* Show the image preview if a file is uploaded */}
                     {preview && (
                       <div className="mt-4 flex justify-center">
                         <img
@@ -229,6 +244,19 @@ function AuthPage() {
                         />
                       </div>
                     )}
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="bio">Bio</Label>
+                    <Textarea
+                      id="bio"
+                      placeholder="Tell us about yourself"
+                      value={bio}
+                      onChange={handleBioChange}
+                      maxLength={150} // Set maxLength attribute for textarea
+                    />
+                    <div className="text-sm text-gray-600">
+                      {bio.length} / 150 characters
+                    </div>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="role">Role</Label>

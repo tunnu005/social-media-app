@@ -2,13 +2,15 @@ import User from '../models/User.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv'
+import cloudinary from '../config/cloudinary.js';
 dotenv.config()
 
 // Function to create a new user
 export const createUser = async (req, res) => {
   console.log(req.body)
   try {
-    const { username, password, profilePic, birthDate, role,email } = req.body;
+    const { username, password, birthDate, role,email,bio } = req.body;
+    const file = req.file
     // console.log({ username, password, bio, profilePic, birthDate, role })
 
     // Check if the username is already taken
@@ -22,14 +24,25 @@ export const createUser = async (req, res) => {
     
     // Hash the password before saving it to the database()
     const hashedPassword = await bcrypt.hash(password, 10);
+
+    const result = await new Promise((resolve, reject) => {
+      cloudinary.uploader.upload_stream(
+        { resource_type: 'image' }, 
+        (error, result) => {
+          if (error) reject(error);
+          else resolve(result);
+        }
+      ).end(file.buffer);
+    });
     // Create a new user instance
     const newUser = new User({
       username,
+      bio,
       password: hashedPassword,
-      profilePic, // This could be a URL or a file path
+      profilePic:result.secure_url, // This could be a URL or a file path
       birthdate:new Date(birthDate), // Ensure birthDate is stored as a Date object
       role,
-      email
+      email,
     });
 
     // console.log(newUser);
@@ -56,11 +69,11 @@ export const createUser = async (req, res) => {
   }
 };
 
-
 export const login = async (req, res) => {
   try {
       const { username, password } = req.body;
-
+      // const tokens = req.cookies.token; // Assuming you have a middleware to parse cookies
+      // console.log(token);
       // Find the user by email
       console.log(username, password);
       const user = await User.findOne({ username });
@@ -69,15 +82,23 @@ export const login = async (req, res) => {
       }
 
       // Generate JWT token
-      const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-      console.log(token);
-      // Set token in HTTP-only cookie
-      res.cookie('token', token, {
+      console.log(user._id)
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: 10 * 24 * 3600 });
+    console.log(token);
+    res
+      .cookie("token", token, {
+        // httpOnly: true,
         expires: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),
+        // sameSite : 'true',
+      })
+      .json({
+         success:true,message:` Hey ${username} 👋, good to see you again! Let’s get things rolling 🚀!`,description : "login successfully",token:token
       });
+      
 
+      // console.log("this is cookies : ",token);
       // Send response
-      res.status(201).json({ success:true,message:` Hey ${username} 👋, good to see you again! Let’s get things rolling 🚀!`,description : "login successfully" });
+      // res.status(201).json();
   } catch (error) {
       res.status(500).json({ error: error.message });
   }

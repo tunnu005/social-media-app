@@ -5,92 +5,30 @@ import image2 from '../../public/images/2.png';
 import ProfileCard from '../component/Profilecard';
 import VerticalMenu from '../component/menubar';
 import 'animate.css';
-
+import { getProfile } from '@/services/userServices';
 
 const Home = () => {
+  const [ProfInfo, setProfile] = useState({});
+
+  useEffect(() => {
+    const Profilehandle = async () => {
+      try {
+        const Profile = await getProfile();
+        console.log('Fetched Profile:', Profile); // Log fetched data
+        setProfile(Profile);
+      } catch (error) {
+        console.error('Error fetching profile:', error);
+      }
+    };
+    Profilehandle();
+  }, []);
+
+  useEffect(() => {
+    console.log('ProfInfo updated:', ProfInfo); // Log ProfInfo whenever it updates
+  }, [ProfInfo]);
+
   const posts = [
-    {
-      profilePicture: image1,
-      username: 'Radha Rani',
-      handle: '@Radha',
-      postImage: image2,
-      caption: "Just enjoying a beautiful day at the beach! 🏖️ #SummerVibes",
-      initialLikes: 23,
-      initialComments: [{ id: 1, user: 'John', text: 'you look beautiful' }],
-    },
-    {
-      profilePicture: image1,
-      username: 'Radha Rani',
-      handle: '@Radha',
-      postImage: image2,
-      caption: "Just enjoying a beautiful day at the beach! 🏖️ #SummerVibes",
-      initialLikes: 23,
-      initialComments: [{ id: 1, user: 'John', text: 'you look beautiful' }],
-    },
-    {
-      profilePicture: image1,
-      username: 'Radha Rani',
-      handle: '@Radha',
-      postImage: image2,
-      caption: "Just enjoying a beautiful day at the beach! 🏖️ #SummerVibes",
-      initialLikes: 23,
-      initialComments: [{ id: 1, user: 'John', text: 'you look beautiful' }],
-    },
-    {
-      profilePicture: image1,
-      username: 'Radha Rani',
-      handle: '@Radha',
-      postImage: image2,
-      caption: "Just enjoying a beautiful day at the beach! 🏖️ #SummerVibes",
-      initialLikes: 23,
-      initialComments: [{ id: 1, user: 'John', text: 'you look beautiful' }],
-    },
-    {
-      profilePicture: image1,
-      username: 'Radha Rani',
-      handle: '@Radha',
-      postImage: image2,
-      caption: "Just enjoying a beautiful day at the beach! 🏖️ #SummerVibes",
-      initialLikes: 23,
-      initialComments: [{ id: 1, user: 'John', text: 'you look beautiful' }],
-    },
-    {
-      profilePicture: image1,
-      username: 'Radha Rani',
-      handle: '@Radha',
-      postImage: image2,
-      caption: "Just enjoying a beautiful day at the beach! 🏖️ #SummerVibes",
-      initialLikes: 23,
-      initialComments: [{ id: 1, user: 'John', text: 'you look beautiful' }],
-    },
-    {
-      profilePicture: image1,
-      username: 'Radha Rani',
-      handle: '@Radha',
-      postImage: image2,
-      caption: "Just enjoying a beautiful day at the beach! 🏖️ #SummerVibes",
-      initialLikes: 23,
-      initialComments: [{ id: 1, user: 'John', text: 'you look beautiful' }],
-    },
-    {
-      profilePicture: image1,
-      username: 'Radha Rani',
-      handle: '@Radha',
-      postImage: image2,
-      caption: "Just enjoying a beautiful day at the beach! 🏖️ #SummerVibes",
-      initialLikes: 23,
-      initialComments: [{ id: 1, user: 'John', text: 'you look beautiful' }],
-    },
-    {
-      profilePicture: image1,
-      username: 'Radha Rani',
-      handle: '@Radha',
-      postImage: image2,
-      caption: "Just enjoying a beautiful day at the beach! 🏖️ #SummerVibes",
-      initialLikes: 23,
-      initialComments: [{ id: 1, user: 'John', text: 'you look beautiful' }],
-    },
-    // Add other posts...
+    // Your posts data here...
   ];
 
   const [visiblePosts, setVisiblePosts] = useState([]); // Track visible posts
@@ -130,7 +68,7 @@ const Home = () => {
   return (
     <div className="flex">
       {/* Fixed Vertical Menu */}
-      <div className="fixed top-0 left-0 w-[15%] h-full z-20" >
+      <div className="fixed top-0 left-0 w-[15%] h-full z-20">
         <VerticalMenu />
       </div>
 
@@ -144,7 +82,7 @@ const Home = () => {
               }`}
               data-index={index}
               key={index}
-              style={{ transition: 'opacity 0.5s ease', animationDelay: `${index == 1 ?  index*0.2 : 0.1 }s` }}
+              style={{ transition: 'opacity 0.5s ease', animationDelay: `${index === 1 ? index * 0.2 : 0.1}s` }}
             >
               <InstagramCard
                 profilePicture={post.profilePicture}
@@ -163,12 +101,12 @@ const Home = () => {
       {/* Fixed Profile Card */}
       <div className="fixed top-0 right-0 w-[20%] mt-7 mr-12">
         <ProfileCard
-          profilePicture={image1}
-          username="John Doe"
-          bio="The ProfileCard now has ample margin and padding, giving it a well-spaced and neat appearance."
-          followers={1500}
-          following={300}
-          posts={45}
+          profilePicture={ProfInfo.profilePic || image1}
+          username={ProfInfo.username || 'Default Username'} // Use ProfInfo.username here
+          bio={ProfInfo.bio || 'The ProfileCard now has ample margin and padding, giving it a well-spaced and neat appearance.'} // Ensure ProfInfo contains this or provide a default
+          followers={ProfInfo.followers || 0} // Ensure ProfInfo contains this or provide a default
+          following={ProfInfo.following || 0} // Ensure ProfInfo contains this or provide a default
+          posts={ProfInfo.posts || 0} // Ensure ProfInfo contains this or provide a default
         />
       </div>
     </div>
