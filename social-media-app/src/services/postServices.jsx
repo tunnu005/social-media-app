@@ -4,8 +4,8 @@ import {  serverapi } from '@/data/server';
 
  
 
-export const fetchPosts = async () => {
-  const response = await axios.get(`${serverapi}/api/posts/getpost`, {
+export const fetchPosts = async (userId) => {
+  const response = await axios.get(`${serverapi}/api/posts/getpost/${userId}`, {
    withCredentials: true
   });
   return response.data;

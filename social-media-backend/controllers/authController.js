@@ -48,7 +48,7 @@ export const createUser = async (req, res) => {
     // console.log(newUser);
     console.log('Creating')
     // Save the user to the database
-    await newUser.save();
+    const curr = await newUser.save();
     console.log('done');
     const token = jwt.sign({ userId: newUser._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
     console.log(token)
@@ -57,6 +57,9 @@ export const createUser = async (req, res) => {
       res.cookie('token', token, {
         expires: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),
       });
+      res.cookie('userId',curr._id,{
+        expires: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),
+      })
     // console.log(savedUser)
     // console.log(savedUser);
     // Respond with the saved user data (excluding the password)
@@ -91,7 +94,12 @@ export const login = async (req, res) => {
         expires: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),
         // sameSite : 'true',
       })
-      .json({
+
+      res.cookie('userId',user.username,{
+        expires: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),
+      })
+
+      res.status(201).json({
          success:true,message:` Hey ${username} 👋, good to see you again! Let’s get things rolling 🚀!`,description : "login successfully",token:token
       });
       

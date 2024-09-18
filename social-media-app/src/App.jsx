@@ -18,6 +18,7 @@ function App() {
         <Route path="/profile" element={<Profile />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/chat" element={<Chat />} />
+        <Route path="/profile/:userId/:username" element={<Profile />} />
 
      
        

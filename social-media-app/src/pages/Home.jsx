@@ -5,7 +5,7 @@ import image2 from '../../public/images/2.png';
 import ProfileCard from '../component/Profilecard';
 import VerticalMenu from '../component/menubar';
 import 'animate.css';
-import { getProfile } from '@/services/userServices';
+import { getProfile, getUser } from '@/services/userServices';
 
 const Home = () => {
   const [ProfInfo, setProfile] = useState({});
@@ -13,7 +13,7 @@ const Home = () => {
   useEffect(() => {
     const Profilehandle = async () => {
       try {
-        const Profile = await getProfile();
+        const Profile = await getUser();
         console.log('Fetched Profile:', Profile); // Log fetched data
         setProfile(Profile);
       } catch (error) {
@@ -107,6 +107,7 @@ const Home = () => {
           followers={ProfInfo.followers || 0} // Ensure ProfInfo contains this or provide a default
           following={ProfInfo.following || 0} // Ensure ProfInfo contains this or provide a default
           posts={ProfInfo.posts || 0} // Ensure ProfInfo contains this or provide a default
+          userId={ProfInfo._id || 0} // Ensure ProfInfo contains this or provide a default
         />
       </div>
     </div>

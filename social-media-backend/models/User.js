@@ -18,7 +18,7 @@ const userSchema = new mongoose.Schema({
     required: true,
     // unique: true,
     lowercase: true,
-   
+
   },
   bio: {
     type: String,
@@ -31,14 +31,16 @@ const userSchema = new mongoose.Schema({
   birthdate: {
     type: Date,
     // required: false,  // Make it optional if necessary
-    
-},
+
+  },
 
   role: {
     type: String,
     enum: ['student', 'celebrity', 'influencer', 'other'], // Restrict to specific values
     // default: 'student'
   },
+  followers: [{ type: String }], // References to followers
+  following: [{ type: String }],
 }, { timestamps: true }); // Adds createdAt and updatedAt fields automatically
 
 // Create the User model using the schema

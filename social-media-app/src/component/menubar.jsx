@@ -3,7 +3,7 @@ import { Home, Search, Compass, PlusCircle, Bell, X, Search as SearchIcon, Messa
 import axios from 'axios';
 import { serverapi } from '@/data/server';
 import UserCard from './Usercard';
-export default function ResponsiveVerticalMenu() {
+export default function ResponsiveVerticalMenu({userId}) {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -11,6 +11,8 @@ export default function ResponsiveVerticalMenu() {
   const [users, setUsers] = useState([]);
 
   const handleSearch = async (e) => {
+
+
 
     const term = e.target.value;
     console.log(term);

@@ -40,8 +40,10 @@ export const createPost = async (req, res) => {
 };
 
 export const getPosts = async (req, res) => {
+
+    const {userId} = req.params
     try {
-        const posts = await Post.find({userId:req.userId}).populate('userId','username profilePic');
+        const posts = await Post.find({userId:userId}).populate('userId','username profilePic');
         console.log(posts);
         res.status(201).json(posts);
     } catch (error) {

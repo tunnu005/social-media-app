@@ -8,12 +8,13 @@ export default function ProfileCard({
   bio,
   followers,
   following,
-  posts
+  posts,
+  userId
 }) {
 
   const navigate = useNavigate();
   return (
-    <div className="bg-white shadow-lg rounded-lg overflow-hidden max-w-sm mx-auto cursor-pointer " onClick={()=>{navigate('/Profile')}}>
+    <div className="bg-white shadow-lg rounded-lg overflow-hidden max-w-sm mx-auto cursor-pointer " onClick={()=>{navigate(`/Profile/${userId}/${username}`)}}>
       {/* Profile Image */}
       <div className="flex justify-center mt-6 ">
         {/* <img
@@ -50,14 +51,14 @@ export default function ProfileCard({
         </div>
 
         {/* Action Buttons */}
-        <div className="mt-6 flex justify-center space-x-4">
+        {/* <div className="mt-6 flex justify-center space-x-4">
           <button className="px-4 py-2 bg-blue-500 text-white rounded-full font-semibold hover:bg-blue-600">
             Follow
           </button>
           <button className="px-4 py-2 border border-gray-300 text-gray-800 rounded-full font-semibold hover:bg-gray-100">
             Message
           </button>
-        </div>
+        </div> */}
       </div>
     </div>
   );

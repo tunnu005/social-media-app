@@ -1,10 +1,12 @@
 import express from 'express';
 const router = express.Router();
-import { getUserProfile,search,updateProfile } from '../controllers/userController.js';
+import { followUser, getuser, getUserProfile,search,updateProfile } from '../controllers/userController.js';
 import auth from '../middleware/auth.js';
 
-router.get('/profile', auth, getUserProfile);
+router.get('/profile/:userId', getUserProfile);
+router.get('/user',auth,getuser)
 router.put('/profile', auth, updateProfile);
 router.get('/search', search)
+router.post('/follow',followUser)
 
 export default router
