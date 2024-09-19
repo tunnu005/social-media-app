@@ -1,3 +1,4 @@
+// src/pages/Home.js
 import React, { useEffect, useRef, useState } from 'react';
 import InstagramCard from '../component/card';
 import image1 from '../../public/images/1.png';
@@ -5,35 +6,84 @@ import image2 from '../../public/images/2.png';
 import ProfileCard from '../component/Profilecard';
 import VerticalMenu from '../component/menubar';
 import 'animate.css';
-import { getProfile, getUser } from '@/services/userServices';
+import { getUser } from '@/services/userServices';
+import { fetchPosts } from '@/services/postServices'; // Assuming this function is available
 
 const Home = () => {
   const [ProfInfo, setProfile] = useState({});
+  const [posts, setPosts] = useState([]);
+  const [visiblePosts, setVisiblePosts] = useState([]);
+  const [page, setPage] = useState(1); // Track the current page for pagination
+  const [hasMorePosts, setHasMorePosts] = useState(true); // Track if there are more posts to load
+  const observer = useRef(null);
+  const loaderRef = useRef(null);
 
   useEffect(() => {
-    const Profilehandle = async () => {
+    const fetchProfile = async () => {
       try {
-        const Profile = await getUser();
-        console.log('Fetched Profile:', Profile); // Log fetched data
-        setProfile(Profile);
+        const profile = await getUser();
+        console.log('Fetched Profile:', profile);
+        setProfile(profile);
       } catch (error) {
         console.error('Error fetching profile:', error);
       }
     };
-    Profilehandle();
+
+    fetchProfile();
   }, []);
 
   useEffect(() => {
-    console.log('ProfInfo updated:', ProfInfo); // Log ProfInfo whenever it updates
-  }, [ProfInfo]);
+    const fetchInitialPosts = async () => {
+      try {
+        const initialPosts = await fetchPosts({ page: 1, limit: 10 });
+        setPosts(initialPosts);
+      } catch (error) {
+        console.error('Error fetching posts:', error);
+      }
+    };
 
-  const posts = [
-    // Your posts data here...
-  ];
+    fetchInitialPosts();
+  }, []);
 
-  const [visiblePosts, setVisiblePosts] = useState([]); // Track visible posts
+  useEffect(() => {
+    observer.current = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && hasMorePosts) {
+            loadMorePosts();
+          }
+        });
+      },
+      {
+        threshold: 1.0, // Trigger when 100% of the loader element is visible
+      }
+    );
 
-  const observer = useRef(null);
+    if (loaderRef.current) {
+      observer.current.observe(loaderRef.current);
+    }
+
+    return () => {
+      if (observer.current) {
+        observer.current.disconnect();
+      }
+    };
+  }, [hasMorePosts]);
+
+  const loadMorePosts = async () => {
+    try {
+      const newPage = page + 1;
+      const newPosts = await fetchPosts({ page: newPage, limit: 10 });
+      if (newPosts.length > 0) {
+        setPosts((prevPosts) => [...prevPosts, ...newPosts]);
+        setPage(newPage);
+      } else {
+        setHasMorePosts(false); // No more posts to load
+      }
+    } catch (error) {
+      console.error('Error loading more posts:', error);
+    }
+  };
 
   useEffect(() => {
     observer.current = new IntersectionObserver(
@@ -51,7 +101,7 @@ const Home = () => {
         });
       },
       {
-        threshold: 0.1, // Trigger when 10% of the post is visible
+        threshold: 0.1,
       }
     );
 
@@ -63,7 +113,7 @@ const Home = () => {
         observer.current.disconnect();
       }
     };
-  }, []);
+  }, [posts]);
 
   return (
     <div className="flex">
@@ -73,7 +123,7 @@ const Home = () => {
       </div>
 
       {/* Instagram Feed */}
-      <div className="w-[65%] ml-[17%] pt-4 items-end justify-end">
+      <div className="w-[65%] ml-[17%] pt-4">
         <div className="justify-end">
           {posts.map((post, index) => (
             <div
@@ -82,7 +132,7 @@ const Home = () => {
               }`}
               data-index={index}
               key={index}
-              style={{ transition: 'opacity 0.5s ease', animationDelay: `${index === 1 ? index * 0.2 : 0.1}s` }}
+              style={{ transition: 'opacity 0.5s ease', animationDelay: `${index * 0.2}s` }}
             >
               <InstagramCard
                 profilePicture={post.profilePicture}
@@ -95,6 +145,11 @@ const Home = () => {
               />
             </div>
           ))}
+          {hasMorePosts && (
+            <div ref={loaderRef} className="loader">
+              Loading more posts...
+            </div>
+          )}
         </div>
       </div>
 
@@ -102,12 +157,12 @@ const Home = () => {
       <div className="fixed top-0 right-0 w-[20%] mt-7 mr-12">
         <ProfileCard
           profilePicture={ProfInfo.profilePic || image1}
-          username={ProfInfo.username || 'Default Username'} // Use ProfInfo.username here
-          bio={ProfInfo.bio || 'The ProfileCard now has ample margin and padding, giving it a well-spaced and neat appearance.'} // Ensure ProfInfo contains this or provide a default
-          followers={ProfInfo.followers || 0} // Ensure ProfInfo contains this or provide a default
-          following={ProfInfo.following || 0} // Ensure ProfInfo contains this or provide a default
-          posts={ProfInfo.posts || 0} // Ensure ProfInfo contains this or provide a default
-          userId={ProfInfo._id || 0} // Ensure ProfInfo contains this or provide a default
+          username={ProfInfo.username || 'Default Username'}
+          bio={ProfInfo.bio || 'Default Bio'}
+          followers={ProfInfo.followers || 0}
+          following={ProfInfo.following || 0}
+          posts={ProfInfo.posts || 0}
+          userId={ProfInfo._id || 0}
         />
       </div>
     </div>

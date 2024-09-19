@@ -50,3 +50,21 @@ export const getPosts = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+export const gethomepost = async(req,res) => {
+  
+  const { page , limit  } = req.params;
+
+  try {
+      // Fetch posts from the database with pagination
+      const posts = await Post.find({ userId })
+          .skip((page - 1) * limit)
+          .limit(parseInt(limit))
+          .exec();
+
+      res.json(posts);
+  } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch posts' });
+  }
+}
+
