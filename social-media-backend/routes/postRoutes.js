@@ -10,6 +10,6 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 router.post('/create', auth, upload.single('file'), createPost);
 router.get('/getpost/:userId', getPosts);
-router.get('getHome/:page/:limit',auth,gethomepost)
+router.get('/getHome/:page/:limit',auth,gethomepost)
 
 export default router

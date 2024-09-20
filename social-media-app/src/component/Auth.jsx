@@ -25,13 +25,14 @@ function AuthPage() {
   const [profilePic, setProfilePic] = useState(null);
   const [preview, setPreview] = useState(null);
   const [bio, setBio] = useState('');
-  const [activeTab, setActiveTab] = useState("signin"); // New state to manage active tab
+  const [activeTab, setActiveTab] = useState("signin");
+  const [loading, setLoading] = useState(false); // Loading state
 
   const navigate = useNavigate();
 
   const handleSubmitSignup = async (e) => {
     e.preventDefault();
-    // Handle signup logic here
+    setLoading(true); // Start loading
     console.log({ username, email, password, birthDate, role, profilePic, bio });
 
     const formData = new FormData();
@@ -41,9 +42,10 @@ function AuthPage() {
     formData.append('birthDate', birthDate);
     formData.append('role', role);
     formData.append('file', profilePic);
-    formData.append('bio', bio); // Add bio to form data
+    formData.append('bio', bio);
 
     const user = await signup(formData);
+    setLoading(false); // Stop loading
 
     console.log(user);
     if (user.success) {
@@ -52,14 +54,13 @@ function AuthPage() {
         action: {
           label: "Okay",
           onClick: () => {
-            setActiveTab("signin"); // Switch to login tab
+            setActiveTab("signin");
           },
         },
       });
       setTimeout(() => {
-        // navigate('/');
         setActiveTab("signin");
-      }, 6000); // 6000 milliseconds = 6 seconds
+      }, 6000);
     } else {
       toast(user.message, {
         description: user.description,
@@ -70,9 +71,7 @@ function AuthPage() {
   const handleLogin = async (e) => {
     e.preventDefault();
 
-    // Handle login logic here
     const user = await login({ username, password });
-
     console.log(user);
 
     if (user.success) {
@@ -87,7 +86,7 @@ function AuthPage() {
       });
       setTimeout(() => {
         navigate('/');
-      }, 3000); // 3000 milliseconds = 3 seconds
+      }, 3000);
     } else {
       toast(user.message, {
         description: user.description,
@@ -110,11 +109,10 @@ function AuthPage() {
       const imageUrl = `data:${file.type};base64,${base64String.split(',')[1]}`;
       setProfilePic(file);
       setPreview(imageUrl);
-      // Store the Base64 image as a data URL
     };
 
     if (file) {
-      reader.readAsDataURL(file); // Convert file to Base64 string
+      reader.readAsDataURL(file);
     }
   };
 
@@ -252,7 +250,7 @@ function AuthPage() {
                       placeholder="Tell us about yourself"
                       value={bio}
                       onChange={handleBioChange}
-                      maxLength={150} // Set maxLength attribute for textarea
+                      maxLength={150}
                     />
                     <div className="text-sm text-gray-600">
                       {bio.length} / 150 characters
@@ -274,9 +272,20 @@ function AuthPage() {
                   </div>
                   <Button
                     type="submit"
-                    className="w-full bg-black text-white hover:shadow-lg transform hover:scale-105 transition duration-300 ease-in-out"
+                    className={`w-full bg-black text-white hover:shadow-lg transform hover:scale-105 transition duration-300 ease-in-out ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
+                    disabled={loading} // Disable button while loading
                   >
-                    Sign Up
+                    {loading ? (
+                      <span className="flex items-center justify-center">
+                        <svg className="animate-spin h-5 w-5 mr-3" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 0114.9 3.6l-1.6-.8A6 6 0 10.5 12h3.2z" />
+                        </svg>
+                        Signing Up...
+                      </span>
+                    ) : (
+                      "Sign Up"
+                    )}
                   </Button>
                 </form>
               </TabsContent>

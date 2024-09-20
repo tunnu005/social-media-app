@@ -52,10 +52,10 @@ export default function SocialCard({
               src={profilePicture}
               alt={`${username}'s profile picture`}
             />
-            {/* <div className="text-sm">
+            <div className="text-sm">
               <p className="text-white font-semibold">{username}</p>
-              <p className="text-gray-300">{handle}</p>
-            </div> */}
+              {/* <p className="text-gray-300">{handle}</p> */}
+            </div>
           </div>
         </div>
         <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/70 to-transparent">

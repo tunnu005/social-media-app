@@ -1,13 +1,12 @@
-// src/pages/Home.js
 import React, { useEffect, useRef, useState } from 'react';
 import InstagramCard from '../component/card';
 import image1 from '../../public/images/1.png';
-import image2 from '../../public/images/2.png';
 import ProfileCard from '../component/Profilecard';
 import VerticalMenu from '../component/menubar';
 import 'animate.css';
 import { getUser } from '@/services/userServices';
-import { fetchPosts } from '@/services/postServices'; // Assuming this function is available
+import { gethomepost } from '@/services/postServices'; // Assuming this function is available
+import { comment } from 'postcss';
 
 const Home = () => {
   const [ProfInfo, setProfile] = useState({});
@@ -18,6 +17,7 @@ const Home = () => {
   const observer = useRef(null);
   const loaderRef = useRef(null);
 
+  // Fetch user profile
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -32,11 +32,14 @@ const Home = () => {
     fetchProfile();
   }, []);
 
+  // Fetch initial posts
   useEffect(() => {
     const fetchInitialPosts = async () => {
       try {
-        const initialPosts = await fetchPosts({ page: 1, limit: 10 });
+        const initialPosts = await gethomepost({ page: 1, limit: 5 }); // Fetching 5 posts initially
         setPosts(initialPosts);
+        console.log(initialPosts);
+        console.log(posts)
       } catch (error) {
         console.error('Error fetching posts:', error);
       }
@@ -45,36 +48,43 @@ const Home = () => {
     fetchInitialPosts();
   }, []);
 
+
+  // Observer for infinite scroll
   useEffect(() => {
-    observer.current = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting && hasMorePosts) {
-            loadMorePosts();
-          }
-        });
-      },
-      {
-        threshold: 1.0, // Trigger when 100% of the loader element is visible
-      }
-    );
+    const intersectionCallback = (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting && hasMorePosts) {
+
+          loadMorePosts(); // Trigger loading more posts
+        }
+      });
+    };
+
+    observer.current = new IntersectionObserver(intersectionCallback, {
+      threshold: 1.0, // Trigger when 100% of the loader element is visible
+    });
 
     if (loaderRef.current) {
-      observer.current.observe(loaderRef.current);
+      observer.current.observe(loaderRef.current); // Start observing the loader
     }
 
     return () => {
       if (observer.current) {
-        observer.current.disconnect();
+        observer.current.disconnect(); // Clean up observer on unmount
       }
     };
   }, [hasMorePosts]);
 
+  // Load more posts when scrolled to the bottom
   const loadMorePosts = async () => {
     try {
       const newPage = page + 1;
-      const newPosts = await fetchPosts({ page: newPage, limit: 10 });
-      if (newPosts.length > 0) {
+      console.log("page : ",newPage)
+      const newPosts = await gethomepost({ page: newPage, limit: 5 });
+      
+      // Safeguard: Ensure newPosts is an array
+      if (Array.isArray(newPosts) && newPosts.length > 0) {
+        console.log("trigger");
         setPosts((prevPosts) => [...prevPosts, ...newPosts]);
         setPage(newPage);
       } else {
@@ -84,7 +94,9 @@ const Home = () => {
       console.error('Error loading more posts:', error);
     }
   };
+  
 
+  // Observer for post visibility animations
   useEffect(() => {
     observer.current = new IntersectionObserver(
       (entries) => {
@@ -101,10 +113,11 @@ const Home = () => {
         });
       },
       {
-        threshold: 0.1,
+        threshold: 0.1, // Trigger when 10% of the post is visible
       }
     );
 
+    
     const elements = document.querySelectorAll('.post');
     elements.forEach((element) => observer.current.observe(element));
 
@@ -115,6 +128,11 @@ const Home = () => {
     };
   }, [posts]);
 
+  const Comments = [{id:1,user:"Mysterious_!Soul🌌",text:"You’re killing it! Keep shining! 💪✨"},
+    {id:2,user:"Coffee_@Sunrise🌅",text:"So much talent! Proud of you! 👏🔥"},{id:3,user:"Nature_@Heart🌳",text:"Absolutely gorgeous! 😍🌸"},
+    {id:4,user:"Gamer!_Alex_92🎮",text:"Can’t get enough of this! 💯🌈"},
+    {id:5,user:"Flirty_@Heart💋",text:"YStunning! You’ve got my heart racing! 💓🔥"}
+  ]
   return (
     <div className="flex">
       {/* Fixed Vertical Menu */}
@@ -132,16 +150,16 @@ const Home = () => {
               }`}
               data-index={index}
               key={index}
-              style={{ transition: 'opacity 0.5s ease', animationDelay: `${index * 0.2}s` }}
+              style={{ transition: 'opacity 0.5s ease', animationDelay: `${index == 0 ? index * 0.2 : 0.2}s` }}
             >
               <InstagramCard
-                profilePicture={post.profilePicture}
-                username={post.username}
-                handle={post.handle}
-                postImage={post.postImage}
+                profilePicture={post.userId.profilePic}
+                username={post.userId.username}
+                
+                postImage={post.image}
                 caption={post.caption}
-                initialLikes={post.initialLikes}
-                initialComments={post.initialComments}
+                initialLikes={post.likes}
+                initialComments={Comments}
               />
             </div>
           ))}

@@ -1,7 +1,7 @@
 import Post from '../models/Post.js'
 import multer from 'multer';
 import cloudinary from '../config/cloudinary.js'; 
-
+import User from '../models/User.js';
 
 export const createPost = async (req, res) => {
     try {
@@ -51,20 +51,31 @@ export const getPosts = async (req, res) => {
     }
 };
 
-export const gethomepost = async(req,res) => {
-  
-  const { page , limit  } = req.params;
+export const gethomepost = async (req, res) => {
+  const { page = 1, limit = 10 } = req.params; // default values for pagination
 
   try {
-      // Fetch posts from the database with pagination
-      const posts = await Post.find({ userId })
-          .skip((page - 1) * limit)
-          .limit(parseInt(limit))
-          .exec();
+    // Get the current user's following list (an array of usernames)
+    const user = await User.findById(req.userId);
+    console.log("Following:", user.following);
 
-      res.json(posts);
+    // Find the users being followed by the current user (by username)
+    const followingUsers = await User.find({ username: { $in: user.following } });
+    const followingUserIds = followingUsers.map((user) => user._id);
+    
+    console.log("Following User IDs:", followingUserIds);
+
+    // Fetch posts from users the current user is following by their userId
+    const posts = await Post.find({ userId: { $in: followingUserIds } })
+  .sort({ createdAt: -1 })
+  .skip((page - 1) * limit)
+  .limit(limit)
+  .populate('userId', 'username profilePic');
+
+res.status(200).json(posts || []); // Return empty array if no posts found
+
   } catch (error) {
-      res.status(500).json({ error: 'Failed to fetch posts' });
+    console.error(error);
+    res.status(500).json({ error: 'Failed to fetch posts' });
   }
-}
-
+};
