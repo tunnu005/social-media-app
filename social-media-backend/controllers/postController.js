@@ -64,14 +64,15 @@ export const gethomepost = async (req, res) => {
     const followingUserIds = followingUsers.map((user) => user._id);
     
     console.log("Following User IDs:", followingUserIds);
-
+    const pos = await Post.find({ userId: { $in: followingUserIds } })
+    console.log("num posts:", pos.length);
     // Fetch posts from users the current user is following by their userId
     const posts = await Post.find({ userId: { $in: followingUserIds } })
   .sort({ createdAt: -1 })
   .skip((page - 1) * limit)
   .limit(limit)
   .populate('userId', 'username profilePic');
-
+    
 res.status(200).json(posts || []); // Return empty array if no posts found
 
   } catch (error) {

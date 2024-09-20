@@ -5,8 +5,7 @@ import ProfileCard from '../component/Profilecard';
 import VerticalMenu from '../component/menubar';
 import 'animate.css';
 import { getUser } from '@/services/userServices';
-import { gethomepost } from '@/services/postServices'; // Assuming this function is available
-import { comment } from 'postcss';
+import { gethomepost } from '@/services/postServices';
 
 const Home = () => {
   const [ProfInfo, setProfile] = useState({});
@@ -15,14 +14,15 @@ const Home = () => {
   const [page, setPage] = useState(1); // Track the current page for pagination
   const [hasMorePosts, setHasMorePosts] = useState(true); // Track if there are more posts to load
   const observer = useRef(null);
+  const [loading, setLoading] = useState(false); // Add loading state to prevent multiple fetches
   const loaderRef = useRef(null);
+
 
   // Fetch user profile
   useEffect(() => {
     const fetchProfile = async () => {
       try {
         const profile = await getUser();
-        console.log('Fetched Profile:', profile);
         setProfile(profile);
       } catch (error) {
         console.error('Error fetching profile:', error);
@@ -33,68 +33,62 @@ const Home = () => {
   }, []);
 
   // Fetch initial posts
-  useEffect(() => {
-    const fetchInitialPosts = async () => {
-      try {
-        const initialPosts = await gethomepost({ page: 1, limit: 5 }); // Fetching 5 posts initially
-        setPosts(initialPosts);
-        console.log(initialPosts);
-        console.log(posts)
-      } catch (error) {
-        console.error('Error fetching posts:', error);
-      }
-    };
+  const fetchInitialPosts = async () => {
+    try {
+      setLoading(true); // Set loading true before fetching
+      const initialPosts = await gethomepost({ page: 1, limit: 3 });
+      setPosts(initialPosts);
+      setLoading(false); // Set loading false after fetching
+    } catch (error) {
+      console.error('Error fetching posts:', error);
+      setLoading(false); // Ensure loading stops on error
+    }
+  };
 
+  useEffect(() => {
     fetchInitialPosts();
   }, []);
 
-
-  // Observer for infinite scroll
-  useEffect(() => {
-    const intersectionCallback = (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting && hasMorePosts) {
-
-          loadMorePosts(); // Trigger loading more posts
-        }
-      });
-    };
-
-    observer.current = new IntersectionObserver(intersectionCallback, {
-      threshold: 1.0, // Trigger when 100% of the loader element is visible
-    });
-
-    if (loaderRef.current) {
-      observer.current.observe(loaderRef.current); // Start observing the loader
-    }
-
-    return () => {
-      if (observer.current) {
-        observer.current.disconnect(); // Clean up observer on unmount
-      }
-    };
-  }, [hasMorePosts]);
-
-  // Load more posts when scrolled to the bottom
-  const loadMorePosts = async () => {
-    try {
-      const newPage = page + 1;
-      console.log("page : ",newPage)
-      const newPosts = await gethomepost({ page: newPage, limit: 5 });
-      
-      // Safeguard: Ensure newPosts is an array
-      if (Array.isArray(newPosts) && newPosts.length > 0) {
-        console.log("trigger");
-        setPosts((prevPosts) => [...prevPosts, ...newPosts]);
-        setPage(newPage);
-      } else {
-        setHasMorePosts(false); // No more posts to load
-      }
-    } catch (error) {
-      console.error('Error loading more posts:', error);
+  // Handle infinite scroll
+  const handleInfiniteScroll = async () => {
+    const scrollableDiv = document.getElementById('scroll');
+    if (
+      scrollableDiv.scrollHeight - scrollableDiv.scrollTop <= scrollableDiv.clientHeight + 10 &&
+      !loading &&
+      hasMorePosts
+    ) {
+      loadMorePosts();
     }
   };
-  
+
+  // Fetch more posts when scrolled to the bottom
+  const loadMorePosts = async () => {
+    try {
+      setLoading(true);
+      const newPosts = await gethomepost({ page: page + 1, limit: 3 });
+
+      if (newPosts.length === 0) {
+        setHasMorePosts(false); // No more posts to load
+      } else {
+        setPosts((prevPosts) => [...prevPosts, ...newPosts]);
+        setPage((prevPage) => prevPage + 1);
+      }
+
+      setLoading(false);
+    } catch (error) {
+      console.error('Error loading more posts:', error);
+      setLoading(false);
+    }
+  };
+
+  // Add scroll event listener
+  useEffect(() => {
+    const scrollableDiv = document.getElementById('scroll');
+    scrollableDiv.addEventListener('scroll', handleInfiniteScroll);
+
+    return () => scrollableDiv.removeEventListener('scroll', handleInfiniteScroll);
+  }, [loading, hasMorePosts]);
+
 
   // Observer for post visibility animations
   useEffect(() => {
@@ -117,7 +111,7 @@ const Home = () => {
       }
     );
 
-    
+
     const elements = document.querySelectorAll('.post');
     elements.forEach((element) => observer.current.observe(element));
 
@@ -128,11 +122,15 @@ const Home = () => {
     };
   }, [posts]);
 
-  const Comments = [{id:1,user:"Mysterious_!Soul🌌",text:"You’re killing it! Keep shining! 💪✨"},
-    {id:2,user:"Coffee_@Sunrise🌅",text:"So much talent! Proud of you! 👏🔥"},{id:3,user:"Nature_@Heart🌳",text:"Absolutely gorgeous! 😍🌸"},
-    {id:4,user:"Gamer!_Alex_92🎮",text:"Can’t get enough of this! 💯🌈"},
-    {id:5,user:"Flirty_@Heart💋",text:"YStunning! You’ve got my heart racing! 💓🔥"}
-  ]
+
+  const Comments = [
+    { id: 1, user: 'Mysterious_!Soul🌌', text: 'You’re killing it! Keep shining! 💪✨' },
+    { id: 2, user: 'Coffee_@Sunrise🌅', text: 'So much talent! Proud of you! 👏🔥' },
+    { id: 3, user: 'Nature_@Heart🌳', text: 'Absolutely gorgeous! 😍🌸' },
+    { id: 4, user: 'Gamer!_Alex_92🎮', text: 'Can’t get enough of this! 💯🌈' },
+    { id: 5, user: 'Flirty_@Heart💋', text: 'Stunning! You’ve got my heart racing! 💓🔥' }
+  ];
+
   return (
     <div className="flex">
       {/* Fixed Vertical Menu */}
@@ -141,8 +139,16 @@ const Home = () => {
       </div>
 
       {/* Instagram Feed */}
-      <div className="w-[65%] ml-[17%] pt-4">
-        <div className="justify-end">
+      <div className="w-[65%] ml-[17%] h-screen pt-4">
+        <div
+          className="justify-end h-screen"
+          style={{
+            overflowY: 'scroll',
+            scrollbarWidth: 'none', // Hide scrollbar in Firefox
+            msOverflowStyle: 'none', // Hide scrollbar in IE and Edge
+          }}
+          id="scroll"
+        >
           {posts.map((post, index) => (
             <div
               className={`post my-3 ${
@@ -155,7 +161,6 @@ const Home = () => {
               <InstagramCard
                 profilePicture={post.userId.profilePic}
                 username={post.userId.username}
-                
                 postImage={post.image}
                 caption={post.caption}
                 initialLikes={post.likes}
@@ -163,9 +168,16 @@ const Home = () => {
               />
             </div>
           ))}
-          {hasMorePosts && (
-            <div ref={loaderRef} className="loader">
+
+          {loading && (
+            <div className="loader">
               Loading more posts...
+            </div>
+          )}
+
+          {!hasMorePosts && (
+            <div className="no-more-posts">
+              No more posts to load.
             </div>
           )}
         </div>
